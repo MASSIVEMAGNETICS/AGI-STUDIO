@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # FILE: run_studio.py
 # VERSION: v1.0.0-GODCORE
 # NAME: AGIStudioRunner
