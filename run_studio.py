@@ -11,6 +11,7 @@ from agi_fileops import AGIFileOps
 from agi_utils import AGIUtils
 from agi_session import AGISession
 from agi_config import AGIConfig
+from victor_thought_engine import VictorThoughtEngine
 import numpy as np
 
 def main():
@@ -24,6 +25,7 @@ def main():
     loss_fn = lambda pred, target: np.mean((pred - target) ** 2)
     optimizer = SGD(lr=0.01)
     trainer = AGITrainer(graph, loss_fn, optimizer)
+    vte = VictorThoughtEngine()
     print("AGI Studio is READY. Enter commands (type 'help'):")
 
     while True:
@@ -39,6 +41,7 @@ commands:
   train [epochs]          - train for N epochs (dummy data)
   checkpoint              - save checkpoint
   stats                   - show training stats
+  pushevent [type] [payload] - push event to VictorThoughtEngine
   quit/exit               - save session & exit
 """)
         elif cmd.startswith("newgraph"):
@@ -74,6 +77,9 @@ commands:
         elif cmd == "stats":
             print("Loss history:", trainer.stats["loss"])
             print("Acc history:", trainer.stats["accuracy"])
+        elif cmd.startswith("pushevent"):
+            _, event_type, payload = cmd.split(maxsplit=2)
+            vte.push_event(event_type, payload)
         elif cmd in {"quit", "exit"}:
             session.set_last_graph("latest_graph.json")
             graph.save("latest_graph.json")

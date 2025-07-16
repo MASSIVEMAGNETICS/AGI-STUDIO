@@ -16,5 +16,17 @@ def test_new_graph_and_add_node():
         print("STDOUT:", stdout)
         print("STDERR:", stderr)
 
+def test_pushevent():
+    print("Testing 'pushevent' command...")
+    commands = "pushevent system.log ERROR: Disk almost full!\nexit\n"
+    stdout, stderr = run_command(commands)
+    if "[SEND_ALERT]" in stdout:
+        print("Test passed!")
+    else:
+        print("Test failed!")
+        print("STDOUT:", stdout)
+        print("STDERR:", stderr)
+
 if __name__ == "__main__":
     test_new_graph_and_add_node()
+    test_pushevent()

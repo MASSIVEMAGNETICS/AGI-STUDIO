@@ -1,11 +1,4 @@
 {
-  "nodes": {
-    "02849c7a-e156-4c7d-94c7-31844c4dd4cf": {
-      "type": "linear",
-      "params": {},
-      "inputs": [],
-      "outputs": []
-    }
-  },
+  "nodes": {},
   "edges": []
 }
