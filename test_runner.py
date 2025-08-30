@@ -1,14 +1,20 @@
+import asyncio
 import subprocess
 
-def run_command(command):
-    process = subprocess.Popen(['python', 'run_studio.py'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    stdout, stderr = process.communicate(command)
-    return stdout, stderr
+async def run_command(command):
+    process = await asyncio.create_subprocess_exec(
+        'python', 'run_studio.py',
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    stdout, stderr = await process.communicate(command.encode())
+    return stdout.decode(), stderr.decode()
 
-def test_new_graph_and_add_node():
+async def test_new_graph_and_add_node():
     print("Testing 'newgraph' and 'addnode' commands...")
     commands = "newgraph\naddnode linear\nexit\n"
-    stdout, stderr = run_command(commands)
+    stdout, stderr = await run_command(commands)
     if "New graph started" in stdout and "Added node" in stdout:
         print("Test passed!")
     else:
@@ -16,17 +22,20 @@ def test_new_graph_and_add_node():
         print("STDOUT:", stdout)
         print("STDERR:", stderr)
 
-def test_pushevent():
+async def test_pushevent():
     print("Testing 'pushevent' command...")
-    commands = "pushevent system.log ERROR: Disk almost full!\nexit\n"
-    stdout, stderr = run_command(commands)
-    if "[SEND_ALERT]" in stdout:
+    commands = "pushevent system.log ERROR: Disk almost full! admin_sys system_ops\nexit\n"
+    stdout, stderr = await run_command(commands)
+    if "Sending critical notification" in stdout:
         print("Test passed!")
     else:
         print("Test failed!")
         print("STDOUT:", stdout)
         print("STDERR:", stderr)
 
+async def main():
+    await test_new_graph_and_add_node()
+    await test_pushevent()
+
 if __name__ == "__main__":
-    test_new_graph_and_add_node()
-    test_pushevent()
+    asyncio.run(main())

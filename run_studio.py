@@ -5,6 +5,7 @@
 # AUTHOR: Brandon "iambandobandz" Emery x Victor (Fractal Architect Mode)
 # PURPOSE: Standalone entrypoint—brings up AGI kernel, trainer, fileops, session, config, utils, launches interactive CLI
 
+import asyncio
 from agi_kernel import AGINodeGraph
 from agi_trainer import AGITrainer, SGD
 from agi_fileops import AGIFileOps
@@ -14,7 +15,7 @@ from agi_config import AGIConfig
 from victor_thought_engine import VictorThoughtEngine
 import numpy as np
 
-def main():
+async def main():
     AGIUtils.setup_logging()
     AGIUtils.log("Starting AGI Studio Suite GODCORE Edition")
     config = AGIConfig()
@@ -29,7 +30,8 @@ def main():
     print("AGI Studio is READY. Enter commands (type 'help'):")
 
     while True:
-        cmd = input(">> ").strip().lower()
+        cmd = await asyncio.to_thread(input, ">> ")
+        cmd = cmd.strip().lower()
         if cmd == "help":
             print("""
 commands:
@@ -41,7 +43,7 @@ commands:
   train [epochs]          - train for N epochs (dummy data)
   checkpoint              - save checkpoint
   stats                   - show training stats
-  pushevent [type] [payload] - push event to VictorThoughtEngine
+  pushevent [type] [payload] [user_id] [project_id] - push event to VictorThoughtEngine
   quit/exit               - save session & exit
 """)
         elif cmd.startswith("newgraph"):
@@ -78,8 +80,12 @@ commands:
             print("Loss history:", trainer.stats["loss"])
             print("Acc history:", trainer.stats["accuracy"])
         elif cmd.startswith("pushevent"):
-            _, event_type, payload = cmd.split(maxsplit=2)
-            vte.push_event(event_type, payload)
+            parts = cmd.split(maxsplit=4)
+            if len(parts) == 5:
+                _, event_type, payload, user_id, project_id = parts
+                await vte.push_event(event_type, payload, user_id, project_id)
+            else:
+                print("Usage: pushevent [type] [payload] [user_id] [project_id]")
         elif cmd in {"quit", "exit"}:
             session.set_last_graph("latest_graph.json")
             graph.save("latest_graph.json")
@@ -90,4 +96,4 @@ commands:
             print("Unknown command. Type 'help'.")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
